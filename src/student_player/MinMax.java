@@ -7,7 +7,7 @@ import boardgame.Move;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoMove;
 
-public class MyTools {
+public class MinMax {
     public static double getSomething() {
         return Math.random();
     }

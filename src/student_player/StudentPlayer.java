@@ -4,6 +4,7 @@ import boardgame.Move;
 
 import pentago_swap.PentagoPlayer;
 import pentago_swap.PentagoBoardState;
+import pentago_swap.PentagoMove;
 
 /** A player file submitted by a student. */
 public class StudentPlayer extends PentagoPlayer {
@@ -26,6 +27,9 @@ public class StudentPlayer extends PentagoPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
-        return MyTools.minMax(boardState, boardState.getTurnPlayer(),2);
+    	
+        
+        return MinMaxABIt.chooseMmAbItMove(boardState);
     }
+    
 }
