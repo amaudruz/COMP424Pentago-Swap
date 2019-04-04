@@ -1,5 +1,6 @@
 package student_player;
 
+import boardgame.Board;
 import boardgame.Move;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoMove;
@@ -29,14 +30,15 @@ public class MinMaxABIt {
 	public static Move AlphaBetaIterative(PentagoBoardState boardState, long starttime, long endtime,  int player) {
 		
 		int depth = 1;
-		
+
 		PentagoMove best = null;
 
 		while (true) {
 			long current = System.currentTimeMillis();
-			
+			 System.out.println(depth);
 			if (current > endtime) {
-				System.out.println(depth);
+				System.out.println(2);
+
 				return best;
 			}
 			
@@ -44,7 +46,6 @@ public class MinMaxABIt {
 			if (m!=null) {
 				best =  m;
 			}
-				
 			
 			depth++;
 		}
@@ -76,16 +77,16 @@ public class MinMaxABIt {
 			PentagoBoardState new_boardState = (PentagoBoardState) boardState.clone();
 			new_boardState.processMove(m);
 			
-			double[] values = min_value(new_boardState, endtime, 1, depth, player, alpha, beta);
-			if (values == null) {
-				continue;
+			double value = min_value(new_boardState, endtime, 1, depth, player, alpha, beta);
+			if (value == Double.NaN) {
+				break;
 			}
-			alpha = values[1];
-			beta = values[2];
 			
-			if (values[0] > maxValue) {
-				maxValue = values[0];
+			alpha = Math.max(alpha, value);
+			
+			if (value > maxValue) {
 				best = m;
+				maxValue = value;
 			}
 		}
 		return best;
@@ -102,50 +103,50 @@ public class MinMaxABIt {
 	 * @param beta
 	 * @return
 	 */
-	private static double[] min_value(PentagoBoardState boardState, long endtime, int depth, int maxDepth, int player, double alpha, double beta) {
-		double[] values = new double[3]; 
-		values[1] = alpha;
-		values[2] = beta;
-		values[0] = Double.POSITIVE_INFINITY;
-
+	private static double min_value(PentagoBoardState boardState, long endtime, int depth, int maxDepth, int player, double alpha, double beta) {
+		
+		double bestVal = Double.POSITIVE_INFINITY;
 		
 		if (boardState.gameOver() || depth == maxDepth) {
-			values[0] = eval(boardState, player);
-			return values;
+			bestVal = eval(boardState, player);
+			return bestVal;
 		}
 		
-		if (System.currentTimeMillis() < endtime) {
-			return null;
+		if (System.currentTimeMillis() > endtime) {
+			return Double.NaN;
 		}
 		
 		else {
 			for (PentagoMove m : boardState.getAllLegalMoves()) {
+				
 				if (System.currentTimeMillis() > endtime) {
-					return null;
+					 return Double.NaN;
 				}
 				
 				
 				PentagoBoardState new_boardState = (PentagoBoardState) boardState.clone();
 				new_boardState.processMove(m);
 				
-				double[] newValues = max_value(new_boardState, endtime, depth + 1, maxDepth, player, values[1] , values[2]);
+				double val = max_value(new_boardState, endtime, depth + 1, maxDepth, player, alpha , beta);
 				
-				if (values[0] > newValues[0]) {
-					values[0] = newValues[0];
+				if (val == Double.NaN) {
+					break;
 				}
-				if (newValues[0] <= values[1] ) {
-					return values;
+				
+				
+				bestVal = Math.min(bestVal, val);
+				beta = Math.min(beta, bestVal);
+				
+				if (beta <= alpha ) {
+					break;
 				}
 					
-				if (values[2] > newValues[2]) {
-					values[2] = newValues[2];
-				}
 				
 				
 			}
 		}
 		
-		return values;
+		return bestVal;
 	}
 
 	
@@ -162,51 +163,50 @@ public class MinMaxABIt {
 	 * @param beta
 	 * @return
 	 */
-	private static double[] max_value(PentagoBoardState boardState, long endtime, int depth, int maxDepth, int player,
+	private static double max_value(PentagoBoardState boardState, long endtime, int depth, int maxDepth, int player,
 			double alpha, double beta) {
-		double[] values = new double[3]; 
-		values[1] = alpha;
-		values[2] = beta;
-		values[0] = Double.NEGATIVE_INFINITY;
-
+double bestVal = Double.NEGATIVE_INFINITY;
 		
 		if (boardState.gameOver() || depth == maxDepth) {
-			values[0] = eval(boardState, player);
-			return values;
+			bestVal = eval(boardState, player);
+			return bestVal;
 		}
 		
-		if (System.currentTimeMillis() < endtime) {
-			return null;
+		if (System.currentTimeMillis() > endtime) {
+			return Double.NaN;
 		}
 		
 		else {
 			for (PentagoMove m : boardState.getAllLegalMoves()) {
+				
 				if (System.currentTimeMillis() > endtime) {
-					return null;
+					 return Double.NaN;
 				}
 				
 				
 				PentagoBoardState new_boardState = (PentagoBoardState) boardState.clone();
 				new_boardState.processMove(m);
 				
-				double[] newValues = min_value(new_boardState, endtime, depth + 1, maxDepth, player, values[1] , values[2]);
+				double val = min_value(new_boardState, endtime, depth + 1, maxDepth, player, alpha , beta);
 				
-				if (values[0] < newValues[0]) {
-					values[0] = newValues[0];
+				if (val == Double.NaN) {
+					break;
 				}
-				if (newValues[0] >= values[2] ) {
-					return values;
+				
+				
+				bestVal = Math.max(bestVal, val);
+				alpha = Math.max(alpha, bestVal);
+				
+				if (alpha >= beta ) {
+					break;
 				}
 					
-				if (values[1] < newValues[1]) {
-					values[1] = newValues[1];
-				}
 				
 				
 			}
 		}
 		
-		return values;
+		return bestVal;
 	}
 	/**
 	 * evaluation function
@@ -217,7 +217,15 @@ public class MinMaxABIt {
 	private static double eval(PentagoBoardState boardState, int player) {
 		// TODO Auto-generated method stub
 		if (boardState.gameOver()) {
-			return boardState.getWinner() == player ? 1 : -1;
+			if (boardState.getWinner() == player) {
+				return 1;
+			}
+			
+			else if (boardState.getWinner() == Board.DRAW) {
+				return 0;
+			}
+			
+			else return -1;
 		}
 		
 		else {

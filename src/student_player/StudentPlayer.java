@@ -27,7 +27,7 @@ public class StudentPlayer extends PentagoPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
-    	
+
         
         return MinMaxABIt.chooseMmAbItMove(boardState);
     }

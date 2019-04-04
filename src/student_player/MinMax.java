@@ -12,6 +12,10 @@ public class MinMax {
         return Math.random();
     }
     
+    public static Move mim(PentagoBoardState boardState) {
+    	return minMax(boardState, boardState.getTurnPlayer(), 1000000);
+    }
+    
     /**
      * MinMax algorithm to find the best move, currently not using any eval function
      * @param boardState
