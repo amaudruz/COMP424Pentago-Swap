@@ -36,39 +36,246 @@ public class NN2layer {
 	private double [][] dLoss_dW2;
 	private double [] dLoss_db1;
 	private double [] dLoss_db2;
+	private double regularization;
 	
 	public ArrayList<Double> loss;
+
+	private double[][] approx_dloss_dW1;
+
+	private double[] approx_dloss_db2;
+
+	private double[] approx_dloss_db1;
+
+	private double[][] approx_dloss_dW2;
 	
-	public NN2layer(double lr) {
+	
+	public NN2layer(double lr, double regularization) {
 		this.lr = lr;
 		this.W1 = MatrixUtil.generate_matrice(layer1nodes, FEATURES_NBR);
 		this.W2 = MatrixUtil.generate_matrice(OUTPUT_SIZE, layer1nodes);
 		this.b1 = MatrixUtil.generate_vector(layer1nodes);
 		this.b2 = MatrixUtil.generate_vector(OUTPUT_SIZE);
 		this.loss = new ArrayList<Double>();
+		this.regularization = regularization;
 
-	}
-	public void test_gradiant(double[] input, double[] output) {
-		double [][] tw1_pl = this.W1;
-		double[][] tw1_mo = this.W1;
-		tw1_pl[0][0] +=  0.000001;
-		tw1_pl[0][0] -=  0.000001;
-
-		
-		double[] yh_p = predict(input, tw1_pl, this.W2, this.b1, this.b2);
-		double[] yh_m = predict(input, tw1_mo, this.W2, this.b1, this.b2);
-
-		
-		double loss_p= this.compute_loss(output, yh_p);
-		double loss_m= this.compute_loss(output, yh_m);
-		
-		double der = (loss_p - loss_m)/0.000001;
-		System.out.println(der);
-		
-		
 	}
 	
 	
+	
+	public void test_gradiant(double[] input, double[] output, double epsilon, boolean comp) {
+		//computes the gradiant using backward prop
+		this.x = input;
+		this.y = output;
+		forward();
+		backward(false);
+		
+		//computes the gradiant using approximation of partial derivative
+		this.approx_dloss_dW1 = new double[this.dLoss_dW1.length][this.dLoss_dW1[0].length];
+		this.approx_dloss_dW2 = new double[this.dLoss_dW2.length][this.dLoss_dW2[0].length];
+		this.approx_dloss_db1 = new double[this.dLoss_db1.length];
+		this.approx_dloss_db2 = new double[this.dLoss_db2.length];
+
+		//computes each element for approx_dloss_dW1
+		for (int i = 0; i < approx_dloss_dW1.length; i++) {
+			for (int j = 0; j < approx_dloss_dW1[0].length; j++) {
+				approx_dloss_dW1[i][j] = partial_der_lossW1(i,j, input, output, epsilon);
+			}
+		}
+		
+		
+		
+		//computes each element for approx_dloss_dW2
+		for (int i = 0; i < approx_dloss_dW2.length; i++) {
+			for (int j = 0; j < approx_dloss_dW2[0].length; j++) {
+				approx_dloss_dW2[i][j] = partial_der_lossW2(i,j, input, output, epsilon);
+			}
+		}
+		//computes each element for approx_dloss_db1
+		for (int i = 0; i < this.dLoss_db1.length; i++) {
+			approx_dloss_db1[i] = partial_der_b1(i, input, output, epsilon);
+		}
+		
+		//computes each element for approx_dloss_db2
+		for (int i = 0; i < this.dLoss_db2.length; i++) {
+			approx_dloss_db2[i] = partial_der_b2(i, input, output, epsilon);
+		}
+		
+		double[][] diff_W1 = MatrixUtil.ew_addititon_matr(this.dLoss_dW1, MatrixUtil.scalar_mul_matr(-1, approx_dloss_dW1));
+		double[][] diff_W2 = MatrixUtil.ew_addititon_matr(this.dLoss_dW2, MatrixUtil.scalar_mul_matr(-1, approx_dloss_dW2));
+		double[] diff_b1 = MatrixUtil.ew_addition(this.dLoss_db1, MatrixUtil.scalar_mul_vect(-1, approx_dloss_db1));
+		double[] diff_b2 = MatrixUtil.ew_addition(this.dLoss_db2, MatrixUtil.scalar_mul_vect(-1, approx_dloss_db2));
+
+		if (!comp) {
+			MatrixUtil.print_matr(diff_W1);
+			MatrixUtil.print_matr(diff_W2);
+			MatrixUtil.print_vect(diff_b1);
+			MatrixUtil.print_vect(diff_b2);
+		}
+		
+		else {
+			this.W1 = MatrixUtil.ew_addititon_matr(W1, MatrixUtil.scalar_mul_matr(-this.lr, this.approx_dloss_dW1));
+			this.W2 = MatrixUtil.ew_addititon_matr(W2, MatrixUtil.scalar_mul_matr(-this.lr, this.approx_dloss_dW2));
+			this.b1 = MatrixUtil.ew_addition(b1, MatrixUtil.scalar_mul_vect(-this.lr, this.approx_dloss_db1));
+			this.b2 = MatrixUtil.ew_addition(b2, MatrixUtil.scalar_mul_vect(-this.lr, this.approx_dloss_db2));
+
+		}
+		
+
+
+
+	}
+	
+	/**
+	 * computes the approx partial der of the less by b2i
+	 * @param i
+	 * @param input
+	 * @param output
+	 * @param epsilon
+	 * @return
+	 */
+	private double partial_der_b2(int i, double[] input, double[] output, double epsilon) {
+		double[] b2_p = new double[this.b2.length];
+		double[] b2_m = new double[this.b2.length];
+
+		for (int j = 0; j < this.b2.length; j++) {
+			if (i == j) {
+				b2_p[j] = this.b2[j] + epsilon;
+				b2_m[j] = this.b2[j] - epsilon;
+
+			}
+			else {
+				b2_p[j] = this.b2[j];
+				b2_m[j] = this.b2[j];
+
+			}
+		}
+		double l_p = this.comput_loss(input, output, this.W1, this.W2, b1, b2_p);
+		double l_m = this.comput_loss(input, output, this.W1, this.W2, b1, b2_m);
+		
+		return (l_p - l_m) / (2*epsilon);
+	}
+
+
+
+	/**
+	 * computes the approx partial der of the less by b1i
+	 * @param i
+	 * @param input
+	 * @param output
+	 * @param epsilon
+	 * @return
+	 */
+	private double partial_der_b1(int i, double[] input, double[] output, double epsilon) {
+		double[] b1_p = new double[this.b1.length];
+		double[] b1_m = new double[this.b1.length];
+
+		for (int j = 0; j < this.b1.length; j++) {
+			if (i == j) {
+				b1_p[j] = this.b1[j] + epsilon;
+				b1_m[j] = this.b1[j] - epsilon;
+
+			}
+			else {
+				b1_p[j] = this.b1[j];
+				b1_m[j] = this.b1[j];
+
+			}
+		}
+		double l_p = this.comput_loss(input, output, this.W1, this.W2, b1_p, b2);
+		double l_m = this.comput_loss(input, output, this.W1, this.W2, b1_m, b2);
+		
+		return (l_p - l_m) / (2*epsilon);
+		
+	}
+
+
+
+	/**
+	 * Computes the approximated partial derivative of the loss by W2ij
+	 * @param i
+	 * @param j
+	 * @param input
+	 * @param output
+	 * @param epsilon 
+	 * @return
+	 */
+	private double partial_der_lossW2(int i, int j, double[] input, double[] output, double epsilon) {
+		double[][] new_W2_plus = new double[this.W2.length][this.W2[0].length];
+		double[][] new_W2_minus = new double[this.W2.length][this.W2[0].length];
+		
+		for (int m = 0; m < new_W2_minus.length; m++) {
+			for(int n = 0; n < new_W2_minus[0].length; n++) {
+				if (m == i && n == j) {
+					new_W2_plus[m][n] = this.W2[m][n] + epsilon;
+					new_W2_minus[m][n] = this.W2[m][n] - epsilon;
+
+				}
+				
+				else {
+					new_W2_plus[m][n] = this.W2[m][n];
+					new_W2_minus[m][n] = this.W2[m][n];
+				}
+			}
+		}
+		
+//		System.out.println("Part der : " + i + " "+ j);
+//		MatrixUtil.print_matr(this.W2);
+//
+//		MatrixUtil.print_matr(new_W2_plus);
+//		MatrixUtil.print_matr(new_W2_minus);
+		
+
+		
+		double l_p = this.comput_loss(input, output, this.W1, new_W2_plus, this.b1, this.b2);
+		double l_m = this.comput_loss(input, output, this.W1, new_W2_minus, this.b1, this.b2);
+		
+		return (l_p - l_m) / (2*epsilon);
+	}
+
+
+
+	/**
+	 * Computes the approximated partial derivative of the loss by W1ij
+	 * @param i
+	 * @param j
+	 * @param input
+	 * @param output
+	 * @param epsilon 
+	 * @return
+	 */
+	private double partial_der_lossW1(int i, int j, double[] input, double[] output, double epsilon) {
+		
+		double[][] new_W1_plus = new double[this.W1.length][this.W1[0].length];
+		double[][] new_W1_minus = new double[this.W1.length][this.W1[0].length];
+		
+		for (int m = 0; m < new_W1_minus.length; m++) {
+			for(int n = 0; n < new_W1_minus[0].length; n++) {
+				if (m == i && n == j) {
+					new_W1_plus[m][n] = this.W1[m][n] + epsilon;
+					new_W1_minus[m][n] = this.W1[m][n] - epsilon;
+
+				}
+				else {
+					new_W1_plus[m][n] = this.W1[m][n];
+					new_W1_minus[m][n] = this.W1[m][n];
+				}
+			}
+		}
+		
+		double l_p = this.comput_loss(input, output, new_W1_plus, this.W2, this.b1, this.b2);
+		double l_m = this.comput_loss(input, output, new_W1_minus, this.W2, this.b1, this.b2);
+		
+		return (l_p - l_m) / (2*epsilon);
+		
+	}
+
+
+
+	/**
+	 * predict output of xx
+	 * @param xx
+	 * @return
+	 */
 	public double[] predict(double[] xx) {
 		double[] z1 = MatrixUtil.ew_addition(MatrixUtil.apply_matrice(W1, xx), b1);
 
@@ -77,6 +284,16 @@ public class NN2layer {
 		return yh;
 	}
 	
+	
+	/**
+	 * predicts the output of input xx given all weights
+	 * @param xx
+	 * @param w1
+	 * @param w2
+	 * @param bb1
+	 * @param bb2
+	 * @return
+	 */
 	public double[] predict(double[] xx, double[][] w1, double[][] w2, double[] bb1, double[] bb2) {
 		double[] z1 = MatrixUtil.ew_addition(MatrixUtil.apply_matrice(w1, xx), bb1);
 
@@ -93,11 +310,11 @@ public class NN2layer {
 	 * @param input
 	 * @param output
 	 */
-	public void train_on_batch(double[][] input, double[][] output, int epochs) {
+	public void train_on_batch(double[][] input, double[][] output, int epochs, boolean comp) {
 		this.loss = new ArrayList<Double>();
 		for (int l = 0; l< epochs; l++) {
 			for (int i = 0; i < input.length; i++) {
-				train(input[i], output[i]);
+				train(input[i], output[i], comp);
 			}
 				
 		}
@@ -108,40 +325,29 @@ public class NN2layer {
 	 * @param x
 	 * @param y
 	 */
-	public void train(double[] x, double[] y) {
+	public void train(double[] x, double[] y, boolean comp) {
 		this.x = x;
 		this.y = y;
-//		MatrixUtil.print_matr(this.W1);
-
-		forward();
-		backward();
+		
+		if (!comp) {
+			forward();
+			backward(true);
+		}
+		else {
+			this.test_gradiant(x, y, 0.000001, true);
+		}
 	}
 
+	
 	/**
 	 * Computes the predicted value while storing intermediate results for backward part
 	 */
 	private void forward() {
 		
-		
-		
-
-
-
-
-
 		this.Z1 = MatrixUtil.ew_addition(MatrixUtil.apply_matrice(W1, x), b1);
 
 		this.A1 = ReLU(Z1);
 		this.yh =  MatrixUtil.ew_addition(MatrixUtil.apply_matrice(W2, A1), b2);
-//		System.out.println("Start :");
-//		MatrixUtil.print_matr(W1);
-//		MatrixUtil.print_matr(W2);
-//		MatrixUtil.print_vect(b1);
-//		MatrixUtil.print_vect(b2);
-//		MatrixUtil.print_vect(x);
-//		MatrixUtil.print_vect(this.Z1);
-//		MatrixUtil.print_vect(this.A1);
-//		MatrixUtil.print_vect(this.Z2);
 		compute_loss();
 		
 	}
@@ -149,25 +355,32 @@ public class NN2layer {
 
 
 	/**
-	 * Computes the partial derivative of loss function with respect to W1, W2, b1, b2
+	 * Computes the partial derivativer loss function with respect to W1, W2, b1, b2 and updates them 
+	 * to minimize loss function
 	 */
-	private void backward() {
+	private void backward(boolean applychange) {
 		double[] dloss_dyh = MatrixUtil.scalar_mul_vect(1, MatrixUtil.ew_addition(yh, MatrixUtil.scalar_mul_vect(-1, y)));
 		double[] dloss_dA1 = MatrixUtil.apply_matrice(MatrixUtil.transpose(W2), dloss_dyh);
 		double[] dloss_dZ1 = MatrixUtil.ew_multiplication(dloss_dA1, dReLU(Z1));
 		
 		
-		double[][] dloss_dW1 = MatrixUtil.outer_product(dloss_dZ1, x);
-		double[][] dloss_dW2 = MatrixUtil.outer_product(dloss_dyh, A1);
-		double[] dloss_db2 = dloss_dyh;
-		double[] dloss_db1 = dloss_dZ1;
+//		this.dLoss_dW1= MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dZ1, x), MatrixUtil.scalar_mul_matr(this.regularization, W1));
+//		this.dLoss_dW2 =  MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dyh, A1), MatrixUtil.scalar_mul_matr(this.regularization, W2));
+		this.dLoss_dW1= (MatrixUtil.outer_product(dloss_dZ1, x));
+		this.dLoss_dW2 =  MatrixUtil.outer_product(dloss_dyh, A1);
+
+
+		this.dLoss_db2 = dloss_dyh;
+		this.dLoss_db1 = dloss_dZ1;
 		
+		if (applychange) {
+			this.W1 = MatrixUtil.ew_addititon_matr(W1, MatrixUtil.scalar_mul_matr(-this.lr, this.dLoss_dW1));
+			this.W2 = MatrixUtil.ew_addititon_matr(W2, MatrixUtil.scalar_mul_matr(-this.lr, this.dLoss_dW2));
+			this.b1 = MatrixUtil.ew_addition(b1, MatrixUtil.scalar_mul_vect(-this.lr, this.dLoss_db1));
+			this.b2 = MatrixUtil.ew_addition(b2, MatrixUtil.scalar_mul_vect(-this.lr, this.dLoss_db2));
 
-		this.W1 = MatrixUtil.ew_addititon_matr(W1, MatrixUtil.scalar_mul_matr(-this.lr, dloss_dW1));
-		this.W2 = MatrixUtil.ew_addititon_matr(W2, MatrixUtil.scalar_mul_matr(-this.lr, dloss_dW2));
-		this.b1 = MatrixUtil.ew_addition(b1, MatrixUtil.scalar_mul_vect(-this.lr, dloss_db1));
-		this.b2 = MatrixUtil.ew_addition(b2, MatrixUtil.scalar_mul_vect(-this.lr, dloss_db2));
-
+		}
+	
 		
 	}
 	
@@ -180,7 +393,7 @@ public class NN2layer {
 		double[] result = new double[a.length];
 		for (int i = 0; i < a.length; i++) {
 			if (a[i] < 0) {
-				result[i] =  a[i] * 0.01;
+				result[i] =  0;
 			}
 			else {
 				result[i] = a[i];
@@ -196,7 +409,7 @@ public class NN2layer {
 				result[i] = 1;
 			}
 			else {
-				result[i] = 0.01;
+				result[i] = 0;
 			}
 		}
 		
@@ -218,9 +431,16 @@ public class NN2layer {
 		for (int i = 0; i < this.y.length; i++) {
 			l += (y[i] - yh[i])*(y[i] - yh[i])/2;
 		}
+//		System.out.println(l);
 		this.loss.add(l);
 	}
 	
+	/**
+	 * compute mse of inputs
+	 * @param out
+	 * @param pred
+	 * @return
+	 */
 	public double compute_loss(double[] out , double[] pred) {
 		double l = 0;
 		for (int i = 0; i < out.length; i++) {
@@ -229,7 +449,25 @@ public class NN2layer {
 		return l;
 	}
 	
+	public double comput_loss(double[] input, double[] output, double[][] W1, double[][] W2, double[] b1, double[] b2) {
+		double[] pred = this.predict(input, W1, W2, b1, b2);
+		return this.compute_loss(output, pred);
+	}
 	
 
 	
 }
+//double[] Z1 = MatrixUtil.ew_addition(MatrixUtil.apply_matrice(W1, input), b1);
+//
+//double[] A1 = ReLU(Z1);
+//double[] yh =  MatrixUtil.ew_addition(MatrixUtil.apply_matrice(W2, A1), b2);
+//
+//double[] dloss_dyh = MatrixUtil.scalar_mul_vect(1, MatrixUtil.ew_addition(yh, MatrixUtil.scalar_mul_vect(-1, output)));
+//double[] dloss_dA1 = MatrixUtil.apply_matrice(MatrixUtil.transpose(W2), dloss_dyh);
+//double[] dloss_dZ1 = MatrixUtil.ew_multiplication(dloss_dA1, dReLU(Z1));
+//
+//
+//double[][] dloss_dW1 = MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dZ1, input), MatrixUtil.scalar_mul_matr(this.regularization, W1));
+//double[][] dloss_dW2 =  MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dyh, A1), MatrixUtil.scalar_mul_matr(this.regularization, W2));
+//double[] dloss_db2 = dloss_dyh;
+//double[] dloss_db1 = dloss_dZ1;

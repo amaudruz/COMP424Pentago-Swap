@@ -10,7 +10,7 @@ public class MatrixUtil {
 	public static double[] generate_vector(int d) {
 		double[] vect = new double[d];
 		for (int i = 0; i < vect.length ; i++) {
-			vect[i] = Math.random() * 20 -10;
+			vect[i] = Math.random() * 2 -1;
 		}
 		return vect;
 	}
@@ -26,7 +26,7 @@ public class MatrixUtil {
 		double[][] matrice = new double[n][m];
 		for (int i = 0; i< matrice.length; i++) {
 			for (int j = 0; j< matrice[0].length ; j++) {
-				matrice[i][j] = Math.random() * 20 -10;
+				matrice[i][j] = Math.random() * 2 -1;
 
 			}
 		}
@@ -171,27 +171,48 @@ public class MatrixUtil {
 		return result;
 	}
 	
+	/**
+	 * prints matrice matr
+	 * @param matr
+	 */
 	public static void print_matr(double[][] matr) {
-		System.out.println();
+	
+		System.out.println("Matr:");
 
 		for (int i = 0; i < matr.length; i++) {
-			System.out.println();
 			for (int j = 0; j< matr[0].length ; j++) {
 				System.out.print(matr[i][j] + ", ");
 			}
+			System.out.println();
+
 		}
-		System.out.println();
 		System.out.println();
 
 	}
+	
+	/**
+	 * prints vect matr
+	 * @param matr
+	 */
 	public static void print_vect(double[] matr) {
-		System.out.println();
+		System.out.println("Vect:");
 
 		for (int i = 0; i < matr.length; i++) {
 			
-				System.out.print(matr[i] + ", ");
+				System.out.println(matr[i] + ", ");
 			
 		}
 		System.out.println();
 	}
+
+//
+//	public static double[][] normalized_diff(double[][] A, double[][] B) {
+//		double[][] result = new double[A.length][A[0].length];
+//		for (int i = 0; i < A.length; i++) {
+//			for (int j = 0; j < A[0].length; j++) {
+//				result[i][j] = (A[i][j] - B[i][j])/ 
+//			}
+//		}
+//		return result;
+//	}
 }
