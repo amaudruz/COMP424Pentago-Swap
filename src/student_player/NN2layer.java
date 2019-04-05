@@ -61,8 +61,14 @@ public class NN2layer {
 	}
 	
 	
-	
-	public void test_gradiant(double[] input, double[] output, double epsilon, boolean comp) {
+	/**
+	 * test the gradiant comparing approximate gradiant do gradient used in backpropagation
+	 * @param input
+	 * @param output
+	 * @param epsilon
+	 * @param comp
+	 */
+	public void test_gradiant(double[] input, double[] output, double epsilon) {
 		//computes the gradiant using backward prop
 		this.x = input;
 		this.y = output;
@@ -105,20 +111,13 @@ public class NN2layer {
 		double[] diff_b1 = MatrixUtil.ew_addition(this.dLoss_db1, MatrixUtil.scalar_mul_vect(-1, approx_dloss_db1));
 		double[] diff_b2 = MatrixUtil.ew_addition(this.dLoss_db2, MatrixUtil.scalar_mul_vect(-1, approx_dloss_db2));
 
-		if (!comp) {
-			MatrixUtil.print_matr(diff_W1);
-			MatrixUtil.print_matr(diff_W2);
-			MatrixUtil.print_vect(diff_b1);
-			MatrixUtil.print_vect(diff_b2);
-		}
+	
+		MatrixUtil.print_matr(diff_W1);
+		MatrixUtil.print_matr(diff_W2);
+		MatrixUtil.print_vect(diff_b1);
+		MatrixUtil.print_vect(diff_b2);
 		
-		else {
-			this.W1 = MatrixUtil.ew_addititon_matr(W1, MatrixUtil.scalar_mul_matr(-this.lr, this.approx_dloss_dW1));
-			this.W2 = MatrixUtil.ew_addititon_matr(W2, MatrixUtil.scalar_mul_matr(-this.lr, this.approx_dloss_dW2));
-			this.b1 = MatrixUtil.ew_addition(b1, MatrixUtil.scalar_mul_vect(-this.lr, this.approx_dloss_db1));
-			this.b2 = MatrixUtil.ew_addition(b2, MatrixUtil.scalar_mul_vect(-this.lr, this.approx_dloss_db2));
-
-		}
+		
 		
 
 
@@ -217,15 +216,7 @@ public class NN2layer {
 				}
 			}
 		}
-		
-//		System.out.println("Part der : " + i + " "+ j);
-//		MatrixUtil.print_matr(this.W2);
-//
-//		MatrixUtil.print_matr(new_W2_plus);
-//		MatrixUtil.print_matr(new_W2_minus);
-		
-
-		
+					
 		double l_p = this.comput_loss(input, output, this.W1, new_W2_plus, this.b1, this.b2);
 		double l_m = this.comput_loss(input, output, this.W1, new_W2_minus, this.b1, this.b2);
 		
@@ -310,11 +301,11 @@ public class NN2layer {
 	 * @param input
 	 * @param output
 	 */
-	public void train_on_batch(double[][] input, double[][] output, int epochs, boolean comp) {
+	public void train_on_batch(double[][] input, double[][] output, int epochs) {
 		this.loss = new ArrayList<Double>();
 		for (int l = 0; l< epochs; l++) {
 			for (int i = 0; i < input.length; i++) {
-				train(input[i], output[i], comp);
+				train(input[i], output[i]);
 			}
 				
 		}
@@ -325,22 +316,20 @@ public class NN2layer {
 	 * @param x
 	 * @param y
 	 */
-	public void train(double[] x, double[] y, boolean comp) {
+	public void train(double[] x, double[] y) {
 		this.x = x;
 		this.y = y;
 		
-		if (!comp) {
-			forward();
-			backward(true);
-		}
-		else {
-			this.test_gradiant(x, y, 0.000001, true);
-		}
+		 
+		forward();
+		backward(true);
+		
+		
 	}
 
 	
 	/**
-	 * Computes the predicted value while storing intermediate results for backward part
+	 * Computes the predicted value while storing intermediate results for backpropagation
 	 */
 	private void forward() {
 		
@@ -355,7 +344,7 @@ public class NN2layer {
 
 
 	/**
-	 * Computes the partial derivativer loss function with respect to W1, W2, b1, b2 and updates them 
+	 * Computes the partial derivative loss function with respect to W1, W2, b1, b2 and updates them using backpropagation
 	 * to minimize loss function
 	 */
 	private void backward(boolean applychange) {
@@ -364,8 +353,7 @@ public class NN2layer {
 		double[] dloss_dZ1 = MatrixUtil.ew_multiplication(dloss_dA1, dReLU(Z1));
 		
 		
-//		this.dLoss_dW1= MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dZ1, x), MatrixUtil.scalar_mul_matr(this.regularization, W1));
-//		this.dLoss_dW2 =  MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dyh, A1), MatrixUtil.scalar_mul_matr(this.regularization, W2));
+
 		this.dLoss_dW1= (MatrixUtil.outer_product(dloss_dZ1, x));
 		this.dLoss_dW2 =  MatrixUtil.outer_product(dloss_dyh, A1);
 
@@ -420,9 +408,6 @@ public class NN2layer {
 	
 	
 	
-	
-	
-	
 	/**
 	 * computes the loss of the current predicted output
 	 */
@@ -457,17 +442,3 @@ public class NN2layer {
 
 	
 }
-//double[] Z1 = MatrixUtil.ew_addition(MatrixUtil.apply_matrice(W1, input), b1);
-//
-//double[] A1 = ReLU(Z1);
-//double[] yh =  MatrixUtil.ew_addition(MatrixUtil.apply_matrice(W2, A1), b2);
-//
-//double[] dloss_dyh = MatrixUtil.scalar_mul_vect(1, MatrixUtil.ew_addition(yh, MatrixUtil.scalar_mul_vect(-1, output)));
-//double[] dloss_dA1 = MatrixUtil.apply_matrice(MatrixUtil.transpose(W2), dloss_dyh);
-//double[] dloss_dZ1 = MatrixUtil.ew_multiplication(dloss_dA1, dReLU(Z1));
-//
-//
-//double[][] dloss_dW1 = MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dZ1, input), MatrixUtil.scalar_mul_matr(this.regularization, W1));
-//double[][] dloss_dW2 =  MatrixUtil.ew_addititon_matr(MatrixUtil.outer_product(dloss_dyh, A1), MatrixUtil.scalar_mul_matr(this.regularization, W2));
-//double[] dloss_db2 = dloss_dyh;
-//double[] dloss_db1 = dloss_dZ1;

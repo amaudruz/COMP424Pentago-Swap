@@ -59,8 +59,8 @@ public class NNtest {
 //		}
 //		
 		NN2layer model = new NN2layer(0.001, 0);
-		model.test_gradiant(input[0], output[0], 0.00000001, false);
-		model.test_gradiant(input[1], output[1], 0.00000001, false);
+		model.test_gradiant(input[0], output[0], 0.00000001);
+		model.test_gradiant(input[1], output[1], 0.00000001);
 
 //		model.train_on_batch(input, outt2, 10000, false);
 //		model.train_on_batch(in, out, 10000, false);
