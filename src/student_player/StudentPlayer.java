@@ -1,5 +1,7 @@
 package student_player;
 
+import java.io.IOException;
+
 import boardgame.Move;
 
 import pentago_swap.PentagoPlayer;
@@ -8,7 +10,9 @@ import pentago_swap.PentagoMove;
 
 /** A player file submitted by a student. */
 public class StudentPlayer extends PentagoPlayer {
-
+	public double count = 0;
+	double o= 0;
+	public NN2layer model;
     /**
      * You must modify this constructor to return your student number. This is
      * important, because this is what the code that runs the competition uses to
@@ -16,6 +20,7 @@ public class StudentPlayer extends PentagoPlayer {
      */
     public StudentPlayer() {
         super("260872326");
+        System.out.println("np");
     }
 
     /**
@@ -27,10 +32,31 @@ public class StudentPlayer extends PentagoPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
-    	int[] state = PentagoStateRepr.stateToArray(boardState, boardState.getTurnNumber());
-    	PentagoStateRepr.print_int(state);
-        System.out.println();
-        return MinMaxABIt.chooseMmAbItMove(boardState);
+    	if (boardState.getTurnNumber() == 0) {
+    		try {
+				this.model = new NN2layer("/home/louis/Documents/github/COMP424Pentago-Swap/data/weights.txt");
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
+    	int move_index = reinforcementLearning.arg_max(model.predict(PentagoStateRepr.stateToArray(boardState, boardState.getTurnPlayer())));
+        PentagoMove m = PentagoStateRepr.int_to_move(move_index, boardState.getTurnPlayer());
+        o++;
+        if (boardState.isLegal(m)) {
+        	
+        	return m;
+        }
+        else {
+        	count += 1;
+        	System.out.println("model move : " + count/o );
+        	System.out.println("rand move");
+        	return boardState.getRandomMove();
+        }
     }
     
 }

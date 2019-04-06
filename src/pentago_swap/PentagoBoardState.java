@@ -65,7 +65,7 @@ public class PentagoBoardState extends BoardState {
     private int winner;
     private Random rand;
 
-    PentagoBoardState() {
+    public PentagoBoardState() {
         super();
         this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
         for (int i = 0; i < BOARD_SIZE; i++) {
@@ -89,7 +89,7 @@ public class PentagoBoardState extends BoardState {
     }
 
     // For cloning
-    private PentagoBoardState(PentagoBoardState pbs) {
+    public PentagoBoardState(PentagoBoardState pbs) {
         super();
         this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
         for (int i = 0; i < BOARD_SIZE; i++) {

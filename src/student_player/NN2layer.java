@@ -1,6 +1,13 @@
 package student_player;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class NN2layer {
 	//learning rate
@@ -12,9 +19,9 @@ public class NN2layer {
 	private double[] b1;
 	private double[] b2;
 	
-	private int layer1nodes = 10;
-	private final int FEATURES_NBR = 2;
-	private final int OUTPUT_SIZE = 1;
+	private int layer1nodes;
+	private  int FEATURES_NBR;
+	private int OUTPUT_SIZE;
 	
 	
 	
@@ -49,7 +56,10 @@ public class NN2layer {
 	private double[][] approx_dloss_dW2;
 	
 	
-	public NN2layer(double lr, double regularization) {
+	public NN2layer(int feature_nbr, int layer1neurons_nbr, int outputneurons_nbr, double lr, double regularization) {
+		this.FEATURES_NBR = feature_nbr;
+		this.OUTPUT_SIZE = outputneurons_nbr;
+		this.layer1nodes = layer1neurons_nbr;
 		this.lr = lr;
 		this.W1 = MatrixUtil.generate_matrice(layer1nodes, FEATURES_NBR);
 		this.W2 = MatrixUtil.generate_matrice(OUTPUT_SIZE, layer1nodes);
@@ -57,9 +67,71 @@ public class NN2layer {
 		this.b2 = MatrixUtil.generate_vector(OUTPUT_SIZE);
 		this.loss = new ArrayList<Double>();
 		this.regularization = regularization;
+		
 
 	}
 	
+	public NN2layer(String filepath) throws NumberFormatException, IOException {
+		
+		try {
+			
+			FileReader f = new FileReader(filepath);
+			BufferedReader b = new BufferedReader(f);
+			
+			//first three lines of file are the shapes
+			this.FEATURES_NBR = (int)Double.parseDouble(b.readLine());
+			this.layer1nodes = (int)Double.parseDouble(b.readLine());
+			this.OUTPUT_SIZE = (int)Double.parseDouble(b.readLine());
+			
+			this.W1 = new double[this.layer1nodes][this.FEATURES_NBR];
+			this.W2 = new double[this.OUTPUT_SIZE][this.layer1nodes];
+			this.b1 = new double[this.layer1nodes];
+			this.b2 = new double[this.OUTPUT_SIZE];
+			
+			int counter = 0;
+			
+			//next lines are w1
+			while (counter < this.layer1nodes * this.FEATURES_NBR) {
+				double wij = Double.parseDouble(b.readLine());
+				int i = (int)counter/this.FEATURES_NBR;
+				int j = counter - (i * this.FEATURES_NBR);
+				this.W1[i][j] = wij;
+				counter++;
+			}
+			
+			counter = 0;
+			//next lines are w2
+			while (counter < this.OUTPUT_SIZE * this.layer1nodes) {
+				double wij = Double.parseDouble(b.readLine());
+				int i = (int)counter/this.layer1nodes;
+				int j = counter - (i * this.layer1nodes);
+				this.W2[i][j] = wij;
+				counter++;
+			}
+			
+			counter = 0;
+			//next lines are b1
+			while (counter < this.b1.length) {
+				double bi = Double.parseDouble(b.readLine());
+				this.b1[counter] = bi;
+				counter++;
+			}
+			
+			counter = 0;
+			//next lines are b2
+			while (counter < this.b2.length) {
+				double bi = Double.parseDouble(b.readLine());
+				this.b2[counter] = bi;
+				counter++;
+			}
+			
+			b.close();
+		
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * test the gradiant comparing approximate gradiant do gradient used in backpropagation
@@ -433,12 +505,177 @@ public class NN2layer {
 		}
 		return l;
 	}
-	
+	/**
+	 * Computes the loss given the weights
+	 * @param input
+	 * @param output
+	 * @param W1
+	 * @param W2
+	 * @param b1
+	 * @param b2
+	 * @return
+	 */
 	public double comput_loss(double[] input, double[] output, double[][] W1, double[][] W2, double[] b1, double[] b2) {
 		double[] pred = this.predict(input, W1, W2, b1, b2);
 		return this.compute_loss(output, pred);
 	}
 	
-
 	
+	public double[][] getW2() {
+		return this.W2;
+	}
+	public double[][] getW1() {
+		return this.W1;
+	}
+	public double[] getb1() {
+		return this.b1;
+	}
+	public double[] getb2() {
+		return this.b2;
+	}
+	public double get_featurenbr() {
+		return this.FEATURES_NBR;
+	}
+	public double get_l1nodes() {
+		return this.layer1nodes;
+	}
+	public double get_output_size() {
+		return this.OUTPUT_SIZE;
+	}
+	
+	public String W1_to_String() {
+		String w1 = "";
+		for (int i = 0 ; i < this.W1.length; i++) {
+			for (int j =0 ; j < this.W1[0].length; j++) {
+				if ((i == this.W1.length -1) && (j == this.W1[0].length -1)) {
+					w1 += ((Double)(this.W1[i][j])).toString();
+				}
+				else {
+					w1 += ((Double)(this.W1[i][j])).toString();
+					w1 += "\n";
+
+				}
+			}
+		}
+		
+		return w1;
+		}
+	
+	public String W2_to_String() {
+		String w2 = "";
+		for (int i = 0 ; i < this.W2.length; i++) {
+			for (int j =0 ; j < this.W2[0].length; j++) {
+				if ((i == this.W2.length -1) && (j == this.W2[0].length -1)) {
+					w2 += ((Double)(this.W2[i][j])).toString();
+				}
+				else {
+					w2 += ((Double)(this.W2[i][j])).toString();
+					w2 += "\n";
+
+				}
+			}
+		}
+		
+		return w2;
+		}
+	
+	public String b1_to_String() {
+		String b1 = "";
+		for(int i = 0; i < this.b1.length; i++) {
+			if (i == this.b1.length -1 ) {
+				b1 += ((Double)this.b1[i]).toString();
+			}
+			
+			else {
+				b1 += ((Double)this.b1[i]).toString();
+				b1 += "\n";
+			}
+		}
+		return b1;
+	}
+	
+	public String b2_to_String() {
+		String b2 = "";
+		for(int i = 0; i < this.b2.length; i++) {
+			if (i == this.b2.length -1 ) {
+				b2 += ((Double)this.b2[i]).toString();
+			}
+			
+			else {
+				b2 += ((Double)this.b2[i]).toString();
+				b2 += "\n";
+			}
+		}
+		return b2;
+	}
+	
+	/**
+	 * Writes all the file to filepath
+	 * @param filepath
+	 */
+	public void write_to_txt(String filepath) {
+		String weights = "";
+		weights += ((Double)this.get_featurenbr()).toString();
+		weights += "\n";
+		weights += ((Double)this.get_l1nodes()).toString();
+		weights += "\n";
+		weights += ((Double)this.get_output_size()).toString();
+		weights += "\n";
+		weights += this.W1_to_String();
+		weights += "\n";
+		weights += this.W2_to_String();
+		weights += "\n";
+		weights += this.b1_to_String();
+		weights += "\n";
+		weights += this.b2_to_String();
+	
+
+
+		
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+
+		try {
+
+			
+
+			fw = new FileWriter("/home/louis/Documents/github/COMP424Pentago-Swap/data/weights.txt");
+			bw = new BufferedWriter(fw);
+			bw.write(weights);
+
+			System.out.println("Done");
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		} finally {
+
+			try {
+
+				if (bw != null)
+					bw.close();
+
+				if (fw != null)
+					fw.close();
+
+			} catch (IOException ex) {
+
+				ex.printStackTrace();
+
+			}
+
+		}
+	}
+
+	public void print_weights() {
+		System.out.println("W1 :");
+		MatrixUtil.print_matr(this.W1);
+		System.out.println("W2 :");
+		MatrixUtil.print_matr(this.W2);
+		System.out.println("b1 :");
+		MatrixUtil.print_vect(this.b1);
+		System.out.println("b2 :");
+		MatrixUtil.print_vect(this.b2);
+	}
 }
