@@ -43,8 +43,22 @@ public class StudentPlayer extends PentagoPlayer {
 				e.printStackTrace();
 			}
     	}
+    	double[] pred = model.predict(PentagoStateRepr.stateToArray(boardState, boardState.getTurnPlayer()));
+    	PentagoBoardState news = (PentagoBoardState) boardState.clone();
+    	news.processMove((PentagoMove) news.getRandomMove());
+    	news.processMove((PentagoMove) news.getRandomMove());
+    	double[] pred2 = model.predict(PentagoStateRepr.stateToArray(news, boardState.getTurnPlayer()));
+
+    	double[] diff = new double[pred2.length];
+    	for (int i =0 ; i < pred.length; i++) {
+    		diff[i] = Math.abs(pred[i] - pred2[i]);
+    	}
     	
-    	int move_index = reinforcementLearning.arg_max(model.predict(PentagoStateRepr.stateToArray(boardState, boardState.getTurnPlayer())));
+    	for (int i =0 ; i < pred.length; i++) {
+    		System.out.print(diff[i] + ", ");
+    	}
+    	
+    	int move_index = reinforcementLearning.arg_max(pred);
         PentagoMove m = PentagoStateRepr.int_to_move(move_index, boardState.getTurnPlayer());
         o++;
         if (boardState.isLegal(m)) {

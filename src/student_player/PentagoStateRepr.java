@@ -13,8 +13,9 @@ public class PentagoStateRepr {
 	 * @return
 	 */
 	public static double[] stateToArray(PentagoBoardState boardState, int player) {
+
 		PentagoBoardState.Piece p = null;
-		if (player == '1') {
+		if (player == 1) {
 			p =  PentagoBoardState.Piece.BLACK;
 			
 		}
@@ -31,8 +32,9 @@ public class PentagoStateRepr {
 		for (int i = 0; i < nbrtiles; i++) {
 			int pos_y = (int)i/6;
 			int pos_x = i - (pos_y*boardState.BOARD_SIZE); 
-			
+
 			if (boardState.getPieceAt(pos_x, pos_y) == p) {
+
 				state[3*i] = 1;
 				state[(3*i)+1] = 0; 
 				state[(3*i)+2] = 0; 
@@ -73,7 +75,7 @@ public class PentagoStateRepr {
 	 * @return
 	 */
 	public static int move_to_int(PentagoMove m ) {
-		int index = 0;
+		int index;
 		index = (6 * (m.getMoveCoord().getX() + (6 * m.getMoveCoord().getY())));
 		
 		if (m.getASwap() == Quadrant.TL && m.getBSwap() == Quadrant.TR ) {

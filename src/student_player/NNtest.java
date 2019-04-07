@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import pentago_swap.PentagoMove;
+
 public class NNtest {
 
 	public static void main(String[] args) throws IOException {
@@ -91,8 +93,23 @@ public class NNtest {
 //		}
 		
 //		NN2layer model = new NN2layer("/home/louis/Documents/github/COMP424Pentago-Swap/data/weights.txt");
+//		boolean b = true;
+//		for (int i= 0; i < 216; i++) {
+//			PentagoMove m = PentagoStateRepr.int_to_move(i, 0);
+//			int  j = PentagoStateRepr.move_to_int(m);
+//			
+//			if (i != j) b = false;
+//
+//		}
+//		System.out.println(b);
 		
-
+		NN2layer model = new NN2layer(2, 10, 1, 0.001, 0);
+		double[][] input = {{0, 1}};
+		double[][] output = {{10}};
+		
+		model.train_on_batch(input, output, 1000);
+		double [] j = model.predict(input[0]);
+		System.out.println(j[0]);
 	}
 
 }

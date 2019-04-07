@@ -177,7 +177,7 @@ public class PentagoBoardState extends BoardState {
         if (m.getASwap() == m.getBSwap()) { return false; } // Cannot swap same tile
         PentagoCoord c = m.getMoveCoord();
         if (c.getX() >= BOARD_SIZE || c.getX() < 0 || c.getY() < 0 || c.getY() >= BOARD_SIZE) { return false; }
-        if (turnPlayer != m.getPlayerID() || m.getPlayerID() == ILLEGAL) { return false; } //Check right player
+        if (turnPlayer != m.getPlayerID() || m.getPlayerID() == ILLEGAL) { System.out.println("james");return false; } //Check right player
         return board[c.getX()][c.getY()] == Piece.EMPTY;
     }
 
