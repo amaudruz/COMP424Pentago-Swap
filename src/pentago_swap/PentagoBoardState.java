@@ -138,7 +138,8 @@ public class PentagoBoardState extends BoardState {
     @Override
     public Move getRandomMove() {
         ArrayList<PentagoMove> moves = getAllLegalMoves();
-        return moves.get(rand.nextInt(moves.size()));
+        return moves.get((int)(Math.random() * moves.size()) );
+//        rand.nextInt(moves.size())
     }
 
     public Piece getPieceAt(int xPos, int yPos) {
