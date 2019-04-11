@@ -9,8 +9,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import pentago_swap.PentagoBoard;
+import pentago_swap.PentagoBoardState;
+import pentago_swap.PentagoBoardState.Quadrant;
 import pentago_swap.PentagoMove;
 
+/**
+ * This was used to test the neural network, can be ignored
+ * @author louis
+ *
+ */
 public class NNtest {
 
 	public static void main(String[] args) throws IOException {
@@ -103,13 +111,24 @@ public class NNtest {
 //		}
 //		System.out.println(b);
 		
-		NN2layer model = new NN2layer(2, 10, 1, 0.001, 0);
-		double[][] input = {{0, 1}};
-		double[][] output = {{10}};
+//		NN2layer model = new NN2layer(2, 10, 1, 0.001, 0);
+//		double[][] input = {{0, 1}};
+//		double[][] output = {{10}};
+//		
+//		model.train_on_batch(input, output, 1000);
+//		double [] j = model.predict(input[0]);
+//		System.out.println(j[0]);
 		
-		model.train_on_batch(input, output, 1000);
-		double [] j = model.predict(input[0]);
-		System.out.println(j[0]);
+		PentagoBoardState s = new PentagoBoardState();
+		PentagoMove m1 = new PentagoMove(0, 0, Quadrant.TR, Quadrant.BR, 0);
+		PentagoMove m2 = new PentagoMove(4, 0, Quadrant.TR, Quadrant.BR, 0);
+		PentagoMove m3= new PentagoMove(0, 0, Quadrant.TR, Quadrant.BR, 0);
+		PentagoMove m4 = new PentagoMove(0, 0, Quadrant.TR, Quadrant.BR, 0);
+
+
+//		s.processMove(m);
+		s.printBoard();
+//		reinforcementLearning.swap_quandrants(s, q1, q2);
 	}
 
 }

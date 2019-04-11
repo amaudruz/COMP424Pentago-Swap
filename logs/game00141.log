@@ -1,0 +1,13 @@
+# Server version 0.08 running on louis-System-Product-Name:8123
+# Game ID: 141
+# Board class: pentago_swap.PentagoBoard
+# Timeout: 2000
+# First Move Timeout: 30000
+# Date: Wed Apr 10 11:16:22 EDT 2019
+# Player 1: Player-0, 'Human', running on localhost
+# Player 2: Player-1, 'Human', running on localhost
+START Player-0 Human
+START Player-1 Human
+4 1 BL BR 0
+GAMEOVER USER CANCEL UNDECIDED
+# Game ended: Wed Apr 10 11:16:40 EDT 2019

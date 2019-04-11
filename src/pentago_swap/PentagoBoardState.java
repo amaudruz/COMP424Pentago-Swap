@@ -43,8 +43,8 @@ public class PentagoBoardState extends BoardState {
     private static final UnaryOperator<PentagoCoord> getNextDiagRight = c -> new PentagoCoord(c.getX()+1, c.getY()+1);
     private static final UnaryOperator<PentagoCoord> getNextDiagLeft = c -> new PentagoCoord(c.getX()+1, c.getY()-1);
     private static int FIRST_PLAYER = WHITE;
-    private static HashMap<Quadrant, Integer> quadToInt;
-    private static HashMap<Integer, Quadrant> intToQuad;
+    public static HashMap<Quadrant, Integer> quadToInt;
+    public static HashMap<Integer, Quadrant> intToQuad;
     static {
         quadToInt = new HashMap<>(4);
         quadToInt.put(Quadrant.TL, 0);
@@ -59,7 +59,7 @@ public class PentagoBoardState extends BoardState {
     }
 
     private Piece[][] board;
-    private Piece[][][] quadrants;
+    public Piece[][][] quadrants;
     private int turnPlayer;
     private int turnNumber;
     private int winner;
@@ -233,7 +233,7 @@ public class PentagoBoardState extends BoardState {
     /**
      * Updates the board after the quadrants have changed.
      */
-    private void buildBoardFromQuadrants() {
+    public void buildBoardFromQuadrants() {
         for (int i = 0; i < BOARD_SIZE; i++) {
             int quadrantRow = i < 3 ? i : i - 3;
             int leftQuad = i < 3 ? 0 : 2;

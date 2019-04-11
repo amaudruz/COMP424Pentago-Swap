@@ -9,6 +9,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of a neural network with one hidden layer with reLU activation function in hidden layer
+
+ * @author louis
+ *
+ */
 public class NN2layer {
 	//learning rate
 	private double lr;
@@ -31,6 +37,8 @@ public class NN2layer {
 	private double[] y;
 	//predicted output
 	private double[] yh;
+	
+	
 	//Loss = (Y -Yh)**2
 	//Yh = Relu(Z2)
 	//Z2 = W2 * A1 + b2
@@ -45,8 +53,10 @@ public class NN2layer {
 	private double [] dLoss_db2;
 	private double regularization;
 	
+	//accumulation of losses (use to test loss minimalization)
 	public ArrayList<Double> loss;
 
+	//approximator of the derivative with respect to the different weights (used to check backpropagation algorithm)
 	private double[][] approx_dloss_dW1;
 
 	private double[] approx_dloss_db2;
@@ -56,6 +66,14 @@ public class NN2layer {
 	private double[][] approx_dloss_dW2;
 	
 	
+	/**
+	 * Construct the nn
+	 * @param feature_nbr
+	 * @param layer1neurons_nbr
+	 * @param outputneurons_nbr
+	 * @param lr
+	 * @param regularization
+	 */
 	public NN2layer(int feature_nbr, int layer1neurons_nbr, int outputneurons_nbr, double lr, double regularization) {
 		this.FEATURES_NBR = feature_nbr;
 		this.OUTPUT_SIZE = outputneurons_nbr;
@@ -71,6 +89,12 @@ public class NN2layer {
 
 	}
 	
+	/**
+	 * COntruct the nn with the weights contained in file 
+	 * @param filepath
+	 * @throws NumberFormatException
+	 * @throws IOException
+	 */
 	public NN2layer(String filepath) throws NumberFormatException, IOException {
 		
 		try {
@@ -134,7 +158,7 @@ public class NN2layer {
 	}
 	
 	/**
-	 * test the gradiant comparing approximate gradiant do gradient used in backpropagation
+	 * test the gradiant comparing approximate gradiant to gradient used in backpropagation
 	 * @param input
 	 * @param output
 	 * @param epsilon
@@ -488,7 +512,6 @@ public class NN2layer {
 		for (int i = 0; i < this.y.length; i++) {
 			l += (y[i] - yh[i])*(y[i] - yh[i])/2;
 		}
-//		System.out.println(l);
 		this.loss.add(l);
 	}
 	

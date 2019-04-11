@@ -1,6 +1,7 @@
 package student_player;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import boardgame.Move;
 
@@ -20,7 +21,6 @@ public class StudentPlayer extends PentagoPlayer {
      */
     public StudentPlayer() {
         super("260872326");
-        System.out.println("np");
     }
 
     /**
@@ -29,9 +29,7 @@ public class StudentPlayer extends PentagoPlayer {
      * make decisions.
      */
     public Move chooseMove(PentagoBoardState boardState) {
-        // You probably will make separate functions in MyTools.
-        // For example, maybe you'll need to load some pre-processed best opening
-        // strategies...
+       //getting data for neural net (weights)
     	if (boardState.getTurnNumber() == 0) {
     		try {
 				this.model = new NN2layer("/home/louis/Documents/github/COMP424Pentago-Swap/data/weights.txt");
@@ -43,26 +41,31 @@ public class StudentPlayer extends PentagoPlayer {
 				e.printStackTrace();
 			}
     	}
+    	
+    	
+    	for (PentagoMove m : boardState.getAllLegalMoves()) {
+    		PentagoBoardState s = (PentagoBoardState) boardState.clone();
+    		s.processMove(m);
+    		if (s.gameOver() && s.getWinner() == boardState.getTurnNumber()) {
+    			return m;
+    		}
+    	}
+    	
+    	
+    	//predicts the move with model 
     	double[] pred = model.predict(PentagoStateRepr.stateToArray(boardState, boardState.getTurnPlayer()));
     	PentagoBoardState news = (PentagoBoardState) boardState.clone();
     	news.processMove((PentagoMove) news.getRandomMove());
     	news.processMove((PentagoMove) news.getRandomMove());
     	double[] pred2 = model.predict(PentagoStateRepr.stateToArray(news, boardState.getTurnPlayer()));
 
-    	double[] diff = new double[pred2.length];
-    	for (int i =0 ; i < pred.length; i++) {
-    		diff[i] = Math.abs(pred[i] - pred2[i]);
-    	}
     	
-    	for (int i =0 ; i < pred.length; i++) {
-    		System.out.print(diff[i] + ", ");
-    	}
     	
-    	int move_index = reinforcementLearning.arg_max(pred);
+    	int move_index = reinforcementLearning.arg_max((reinforcementLearning.mask(pred, boardState, boardState.getTurnPlayer())));
         PentagoMove m = PentagoStateRepr.int_to_move(move_index, boardState.getTurnPlayer());
         o++;
         if (boardState.isLegal(m)) {
-        	
+
         	return m;
         }
         else {
@@ -72,5 +75,7 @@ public class StudentPlayer extends PentagoPlayer {
         	return boardState.getRandomMove();
         }
     }
+    	
+    	
     
 }

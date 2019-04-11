@@ -1,5 +1,10 @@
 package student_player;
 
+/**
+ * For matrix and vectors operations
+ * @author louis
+ *
+ */
 public class MatrixUtil {
 	
 	/**
@@ -205,14 +210,5 @@ public class MatrixUtil {
 		System.out.println();
 	}
 
-//
-//	public static double[][] normalized_diff(double[][] A, double[][] B) {
-//		double[][] result = new double[A.length][A[0].length];
-//		for (int i = 0; i < A.length; i++) {
-//			for (int j = 0; j < A[0].length; j++) {
-//				result[i][j] = (A[i][j] - B[i][j])/ 
-//			}
-//		}
-//		return result;
-//	}
+
 }

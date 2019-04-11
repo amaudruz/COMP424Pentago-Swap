@@ -1,0 +1,25 @@
+# Server version 0.08 running on louis-System-Product-Name:8123
+# Game ID: 201
+# Board class: pentago_swap.PentagoBoard
+# Timeout: 2000
+# First Move Timeout: 30000
+# Date: Wed Apr 10 16:16:34 EDT 2019
+# Player 1: Player-0, '260872326', running on localhost
+# Player 2: Player-1, 'Human', running on localhost
+START Player-0 260872326
+START Player-1 Human
+4 0 TL TR 0
+4 1 BL TL 1
+4 0 TL TR 0
+1 5 TR BR 1
+1 2 TL TR 0
+3 4 BR TL 1
+5 3 BL BR 0
+3 3 BR TR 1
+2 0 TL BR 0
+2 4 TR TL 1
+4 0 TL TR 0
+1 4 TR TL 1
+2 2 TL BR 0
+GAMEOVER USER CANCEL UNDECIDED
+# Game ended: Wed Apr 10 16:18:15 EDT 2019
